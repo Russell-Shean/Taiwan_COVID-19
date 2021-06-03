@@ -9,7 +9,7 @@ Cleaning script
 Maps and gifs script
 - Makes animated maps of daily incidence by district
 - Makes a shiny that allows users to select date and view incidence by district for that day
- - Shiny: I need help. I can make them, but I can't figure out how to upload them~~~
+ - Shiny: I need help. I can make them, but I can't figure out how to upload them...
 
 ## Workflow
 
