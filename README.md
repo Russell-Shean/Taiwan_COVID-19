@@ -13,8 +13,8 @@ Maps and gifs script
 ## Workflow
 
 1. Download new taiwan districts, pop_by_sex2, cleaning script, and maps and gifs script
-2. Run cleaning script 
- * (OR directly open maps and gifs and run the source() line)
+2. Run cleaning script    
+ - (OR directly open maps and gifs and run the source() line)
 3. Play around with code in maps and GIFS script to make GIFS, maps and shiny
 4. If you figure out how to get shiny online, pleaseee email me link and explanation of how you did it hahaha
 5. No, but seriously if you do, email me: russshean@gmail.com 
