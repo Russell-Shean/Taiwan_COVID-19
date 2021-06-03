@@ -24,3 +24,9 @@ Maps and gifs script
 Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. That's why there's both a UTF8 and a BIG5 version of cleaning scripts.
 If you run source() the encoding will matter. 
 
+## If you just want to look at the pictures
+
+<img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/quanguo_inc.gif" width="400" height="400" /><img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/beibu_inc.gif" width="400" height="400" />
+
+Left side: New locally acquired cases per 100,000 people from 4/23/2021  Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)
+
