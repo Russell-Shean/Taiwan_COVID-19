@@ -1,10 +1,10 @@
 # Maps, GIFS and Shinies
 
-- Cleaning script
- -- Includes the latest version of my script for cleaning Covid and population data
- - automatically imports covid data from Taiwan CDC JSON
+Cleaning script
+ - Includes the latest version of my script for cleaning Covid and population data
+ - Automatically imports covid data from Taiwan CDC JSON
  - calculates daily incidence stratified by various combinations of age,sex,and district 
-  - (Someone could probably make this into daily cumulative prevalence fairly easily)
+  -- (Someone could probably make this into daily cumulative prevalence fairly easily)
 
 - Maps and gifs script
  - Makes animated maps of daily incidence by district
