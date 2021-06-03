@@ -3,8 +3,8 @@
 Cleaning script
  - Includes the latest version of my script for cleaning Covid and population data
  - Automatically imports covid data from Taiwan CDC JSON
- - Calculates daily incidence stratified by various combinations of age,sex,and district. 
-       - (Someone could probably make this into daily cumulative prevalence fairly easily)
+ - Calculates daily incidence stratified by various combinations of age,sex,and district.    
+ -  (Someone could probably make this into daily cumulative prevalence fairly easily)
 
 Maps and gifs script
 - Makes animated maps of daily incidence by district
