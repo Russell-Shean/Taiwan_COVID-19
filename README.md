@@ -31,3 +31,9 @@ If you run source() the encoding will matter.
 Left side: New locally acquired cases per 100,000 people from 4/23/2021    
 Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)
 
+
+Here's what the Shiny looks like: 
+<img src="https://github.com/Russell-Shean/Covid_SHINY_MAP/blob/main/192618317_223019976297967_895173108556869321_n.png" width="400" height="400" />
+
+
+
