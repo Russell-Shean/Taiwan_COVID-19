@@ -26,7 +26,7 @@ inc_by_AD  = incidence stratified by age and district
 S= sex, A =age, D = district   
 
 ## Potential pitfalls
-Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts.
+Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. Different R functions appear to prefer different encoding formats. Finding the right encoding also probably depends on your computer's system language setting. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts. If one doesn't work, try the other.
 If you run source() the encoding will matter. 
 
 ## If you just want to look at the pictures
