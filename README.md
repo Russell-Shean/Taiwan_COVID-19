@@ -26,13 +26,18 @@ If you run source() the encoding will matter.
 
 ## If you just want to look at the pictures
 
-<img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/quanguo_inc.gif" width="400" height="400" /><img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/beibu_inc.gif" width="400" height="400" />
+<img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/quanguo_inc.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/beibu_inc.gif" width="400" height=auto />
 
 Left side: New locally acquired cases per 100,000 people from 4/23/2021    
-Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)
+Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)   
+   
+      
+         
+         
 
 
-Here's what the Shiny looks like: 
+Here's what the Shiny looks like:    
+
 <img src="https://github.com/Russell-Shean/Covid_SHINY_MAP/blob/main/192618317_223019976297967_895173108556869321_n.png" width="400" height="400" />
 
 
