@@ -21,7 +21,7 @@ Maps and gifs script
 5. No, but seriously if you do, email me: russshean@gmail.com 
 
 ## Potential pitfalls
-Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. That's why there's both a UTF8 and a BIG5 version of cleaning scripts.
+Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts.
 If you run source() the encoding will matter. 
 
 ## If you just want to look at the pictures
