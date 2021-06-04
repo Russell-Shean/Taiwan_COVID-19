@@ -296,6 +296,78 @@ inc_by_D <- pop_by_D %>%
             by=c("site_id"="site_id"))%>%
   mutate(new_perCapita = case_count/population*100000)
 
+##################################################################################################
+###########   This makes a function to calculate cumulative prevalence ##############################
+####################################################################################################
+
+prevalator <- function(df=inc_by_D, var1="site_id"){
+
+require(lubridate)
+require(dplyr)
+
+date_range <- seq(from= min(inc_by_D$assigned_onset_date,
+                            na.rm = TRUE),
+                      to= max(inc_by_D$assigned_onset_date,
+                              na.rm = TRUE),
+                          by="days")
+
+district_list <- unique(inc_by_D$site_id)
+
+date_range_index <- as.data.frame(matrix(rep(date_range,times=length(unique(district_list))),
+                                         nrow = length(unique(district_list)),byrow = TRUE))
+
+for (i in seq_along(date_range)) {
+  date_range_index[,i] <- date_range[i]
+  
+} 
+
+date_range_index <- cbind(district_list,date_range_index)
+ 
+require(reshape2)
+
+date_range_index <- melt(date_range_index)
+
+date_range_index <- date_range_index[,-2]
+
+colnames(date_range_index) <- c("site_id","assigned_onset_date")
+
+
+
+df <- df %>%
+  full_join(date_range_index,
+            by=c("site_id"="site_id",
+                "assigned_onset_date"="assigned_onset_date"))
+
+
+
+
+df[is.na(df$new_perCapita),]$new_perCapita <- 0
+
+testik <- df %>% 
+  arrange(site_id, assigned_onset_date)%>%
+  filter(!is.na(assigned_onset_date))
+
+cumsums <- numeric()
+
+  
+for (i in unique(testik[,var1])) {
+ cumsums2 <- cumsum(testik[testik[,var1]==i,]$new_perCapita)
+ cumsums <- c(cumsums,cumsums2)                  
+}
+
+#works to here
+  
+testik$Cumul_cases_perCapita <- cumsums  
+
+testik
+}
+
+###########################################################################################3
+### here's the function in action:
+
+inc_by_D <- prevalator(df=inc_by_D)
+
+
 
 ####################################################
 #####    Remove extra datasets and functions  ######
