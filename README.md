@@ -32,7 +32,7 @@ If you run source() the encoding will matter.
 
 ## If you just want to look at the pictures
 
-<img src="https://github.com/Russell-Shean/Covid_SHINY_MAP/raw/main/beibu_prev.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwancovid/raw/main/beibu_inc.gif" width="400" height=auto />
+<img src="https://github.com/Russell-Shean/Covid_SHINY_MAP/raw/main/quanguo_inc.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwancovid/raw/main/beibu_inc.gif" width="400" height=auto />
 
 Left side: New locally acquired cases per 100,000 people from 4/23/2021    
 Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)   
