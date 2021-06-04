@@ -20,6 +20,11 @@ Maps and gifs script
 4. If you figure out how to get the shiny online, pleaseee email me link and explanation of how you did it hahaha
 5. No, but seriously if you do, email me: russshean@gmail.com 
 
+## Naming scheme
+inc_by_SAD = incidence stratified by sex, age, and district   
+inc_by_AD  = incidence stratified by age and district   
+S= sex, A =age, D = district   
+
 ## Potential pitfalls
 Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts.
 If you run source() the encoding will matter. 
