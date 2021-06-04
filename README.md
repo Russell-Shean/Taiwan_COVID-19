@@ -28,6 +28,6 @@ If you run source() the encoding will matter.
 
 <img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/quanguo_inc.gif" width="400" height="400" /><img src="https://github.com/Russell-Shean/Taiwancovid/blob/main/beibu_inc.gif" width="400" height="400" />
 
-Left side: New locally acquired cases per 100,000 people from 4/23/2021 
+Left side: New locally acquired cases per 100,000 people from 4/23/2021    
 Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)
 
