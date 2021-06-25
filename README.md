@@ -3,8 +3,9 @@
 Cleaning script
  - Includes the latest version of my script for cleaning Covid and population data
  - Automatically imports covid data from Taiwan CDC JSON
+ - Automatically imports population data from Ministry of interior website
  - Calculates daily incidence stratified by various combinations of age,sex,and district.    
- - 06-04-2021 update: Calculates a running sum of daily cumulative cases per population stratified by district
+ - 06-25-2021 update: Calculates cumulative prevalence by age, sex and district
 
 Maps and gifs script
 - Makes animated maps of daily incidence by district
@@ -14,12 +15,11 @@ Maps and gifs script
 
 ## Workflow
 
-1. Download new taiwan districts, pop_by_sex2, cleaning script, and maps and gifs script
+1. Download new taiwan districts, cleaning script, and maps and gifs script
 2. Run cleaning script    
        - (OR directly open maps and gifs and run the source() line)
 3. Play around with code in maps and GIFS script to make GIFS, maps and shiny
-4. If you figure out how to get the shiny online, pleaseee email me link and explanation of how you did it hahaha
-5. No, but seriously if you do, email me: russshean@gmail.com 
+
 
 ## Naming scheme
 inc_by_SAD = incidence stratified by sex, age, and district   
@@ -29,6 +29,8 @@ S= sex, A =age, D = district
 ## Potential pitfalls
 Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. Different R functions appear to prefer different encoding formats. Finding the right encoding also probably depends on your computer's system language setting. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts. If one doesn't work, try the other.
 If you run source() the encoding will matter. 
+Shiny apparently doesn't work well on firefox (especially for leaflet QQ) 
+And I'm not the only one!: https://stackoverflow.com/questions/65116942/firefox-leaflet-not-displaying-map-shapes-in-shiny-app-default-page-when-publish 
 
 ## If you just want to look at the pictures
 
