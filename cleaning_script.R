@@ -1,8 +1,39 @@
+# 6/25 RS edits
+# new in this version: 
+# 1. changed population data to download from the internet (no need to separately download
+#     data outside of the script)
+
+# 2. added namespaces to reduce the risk of conflicts (mostly dplyr::)
+
+# 3. Cumulative prevalence
+#   Adds a function that calculates cumulative prevalence
+#    for age, sex, and district. I'm working on a version
+#    of the function that will work on combinations of the 
+#    three variables. This also solves the problem of
+#    date or district holes in the data by making sure
+#    all date and variable combinations are present in the
+#    dataframe either with cases or as zeros
+
+# 4. Added additional explanations and documentation for what the script does
+
+### future plans
+# 1. make shapefiles download directly from the internet
+# 2. Finish cumulative prevalence for sex-age, district-sex, district-age,and SAD
+# 3. graphs and shiny tweeks.....ideas for graphs to add?
+
+## unresolved problems
+# 1. Shiny doesn't work on firefox (and maybe other browsers too?), seems to be a widespread problem
+#     especially for leaflet
+
+
 #Covid JSon clean
 
 library(rjson)
 library(jsonlite)
 library(dplyr)
+
+# this imports covid data directly from Taiwan CDC website
+# this website is updated daily, so this will automatically download the most recent numbers
 covid_cases <- fromJSON("https://od.cdc.gov.tw/eic/Day_Confirmation_Age_County_Gender_19CoV.json", flatten=TRUE)
 
 #rename variables with English names
@@ -29,7 +60,7 @@ covid_cases$site_id <- paste(covid_cases$city,
 # recognizes 
 
 library(lubridate)
-covid_cases$assigned_onset_date <- as.Date(covid_cases$assigned_onset_date, format = "%Y%m%d")
+covid_cases$assigned_onset_date <- as.Date(covid_cases$assigned_onset_date, format = "%Y/%m/%d")
 
 #changes case count to a number 
 covid_cases$case_count <- as.numeric(covid_cases$case_count)
@@ -58,17 +89,37 @@ covid_cases[covid_cases$age_range=="70+",]$age_range <- "pop_over70"
 
 
 
+# this downloads the population data from the web
+# so now people should be able to run this script
+# directly without having to download the population 
+# data first
+# population data originally came from the ministry of interior website
+# https://ws.moi.gov.tw/001/Upload/OldFile/site_stuff/321/2/year/year.html
+# 15.鄉鎮市區人口數按性別及單一年齡分
 
 
+##### This is an alternate way of downloading the data from github (just in case MOI moves their data)
+
+#download population data from github
+# this creates a temporary file
+#temp <- tempfile(fileext = ".xlsx")
+#dataURL <- "https://github.com/Russell-Shean/Covid_SHINY_MAP/raw/main/pop_by_sex2.xlsx"
+#download.file(dataURL, destfile=temp, mode='wb')
+#pop_by_sex2 <- read_xlsx(temp)
 
 
-
+# This download population data from MOI website
+temp1 <- tempfile(fileext = ".xls")
+dataURL1 <- "https://www.ris.gov.tw/info-popudata/app/awFastDownload/file/y1sg-00000.xls/y1sg/00000/"
+download.file(dataURL1,destfile = temp1, mode = "wb")
 
 
 #here's population by age, sex, and district
 require(readxl)
-pop_by_sex2 <- read_xlsx("pop_by_sex2.xlsx", sheet = 1)
+pop_by_sex2 <- read_xls(temp1)
 pop_by_sex2 <- as.data.frame(pop_by_sex2)
+
+
 
 #change column names
 new.names <-  c("sex","area_code","area_name","total_pop",
@@ -78,9 +129,9 @@ new.names <-  c("sex","area_code","area_name","total_pop",
 
 colnames(pop_by_sex2)<- new.names
 
-#remove first three rows
+#remove first four rows and last row
 pop_by_sex2 <- pop_by_sex2 %>%
-  slice(5:n())
+  dplyr::slice(5:(n()-1))
 
 
 #make the site_id variable
@@ -124,7 +175,7 @@ Names14 <- data.frame(city = c("新北市",
 Names14$city_code <- round(Names14$area_code/1000)
 
 pop_by_sex2 <- pop_by_sex2 %>% 
-  left_join(Names14, by=c("city_code"="city_code")) 
+  dplyr::left_join(Names14, by=c("city_code"="city_code")) 
 
 #create the site_id field
 pop_by_sex2$site_id <- paste(pop_by_sex2$city,
@@ -139,8 +190,13 @@ pop_by_sex2$site_id <- paste(pop_by_sex2$city,
 #pop_by_sex3 <- cbind(pop_by_sex2[,1:4],apply(pop_by_sex2[,3:105],2,as.numeric),pop_by_sex2[,106:109])
 pop_by_sex2$pop_at_age_100 <- as.numeric(pop_by_sex2$pop_at_age_100)
 
+pop_by_sex2 <- pop_by_sex2 %>%
+  dplyr::mutate(across(total_pop:pop_at_age_100,as.numeric))
+
+
+
 pop_by_sex3 <- pop_by_sex2 %>%
-  mutate(pop_0 =pop_at_age_0,
+  dplyr::mutate(pop_0 =pop_at_age_0,
          pop_1 =pop_at_age_1,
          pop_2 =pop_at_age_2,
          pop_3 = pop_at_age_3,
@@ -164,7 +220,7 @@ pop_by_sex3 <- pop_by_sex2 %>%
   dplyr::select(!area_code.y)%>%
   dplyr::select(!city_code)%>%
   dplyr::select(!(area_name:city))%>%
-  filter(site_id %notin% c("NA總計",
+  dplyr::filter(site_id %notin% c("NA總計",
                            "NA福建省",
                            "新北市新北市",
                            "台北市台北市",
@@ -203,18 +259,18 @@ pop_by_sex3 <- pop_by_sex2 %>%
 # 1. Here's population stratified by sex,age, and district
 require(reshape2)            
 pop_by_SAD <- melt(pop_by_sex3, id.vars = c("sex","site_id"))%>%
-  rename(age_range = "variable",
+  dplyr::rename(age_range = "variable",
          population = "value")
 
 pop_by_SAD$population <- as.numeric(pop_by_SAD$population)
 
 inc.maker <- function(pop){
   inc <- pop %>%
-    full_join(covid_cases,
+    dplyr::full_join(covid_cases,
               by=c("site_id"="site_id",
                    "age_range"="age_range",
                    "sex"="sex"))%>%
-    mutate(new_perCapita = case_count/population*100000)
+    dplyr::mutate(new_perCapita = case_count/population*100000)
   inc
 }
 
@@ -224,7 +280,7 @@ inc_by_SAD <- inc.maker(pop_by_SAD)
 pop_by_SA <- aggregate(population~sex+age_range, data= pop_by_SAD, FUN = sum)
 
 covid_cases2 <- covid_cases %>%
-  filter(imported=="否",
+  dplyr::filter(imported=="否",
          assigned_onset_date > "2021-04-01")%>%
   dplyr::select(assigned_onset_date,
                 case_count,
@@ -235,10 +291,10 @@ covid_cases2 <- covid_cases %>%
 cases_by_SA <- aggregate(case_count~assigned_onset_date+age_range+sex, data=covid_cases2, FUN = sum)
 
 inc_by_SA <- pop_by_SA %>%
-  full_join(cases_by_SA,
+  dplyr::full_join(cases_by_SA,
             by=c("age_range"="age_range",
                  "sex"="sex"))%>%
-  mutate(new_perCapita = case_count/population*100000)
+  dplyr::mutate(new_perCapita = case_count/population*100000)
 
 # 3. Here's population stratified by sex and district
 pop_by_SD <- aggregate(population~sex+site_id, data= pop_by_SAD, FUN = sum)
@@ -246,10 +302,10 @@ pop_by_SD <- aggregate(population~sex+site_id, data= pop_by_SAD, FUN = sum)
 cases_by_SD <- aggregate(case_count~assigned_onset_date+site_id+sex, data = covid_cases2, FUN = sum)
 
 inc_by_SD <- pop_by_SD %>%
-  full_join(cases_by_SD,
+  dplyr::full_join(cases_by_SD,
             by=c("site_id"="site_id",
                  "sex"="sex"))%>%
-  mutate(new_perCapita = case_count/population*100000)
+  dplyr::mutate(new_perCapita = case_count/population*100000)
 
 
 
@@ -259,9 +315,9 @@ pop_by_S <- aggregate(population~sex, data= pop_by_SAD, FUN = sum)
 cases_by_S <- aggregate(case_count~assigned_onset_date+sex, data=covid_cases2, FUN = sum)
 
 inc_by_S <- pop_by_S %>%
-  full_join(cases_by_S,
+  dplyr::full_join(cases_by_S,
             by=c("sex"="sex"))%>%
-  mutate(new_perCapita = case_count/population*100000)
+  dplyr::mutate(new_perCapita = case_count/population*100000)
 
 # Age 
 
@@ -271,10 +327,10 @@ pop_by_AD <-  aggregate(population~age_range+site_id, data= pop_by_SAD, FUN = su
 cases_by_AD <- aggregate(case_count~assigned_onset_date+age_range+site_id, data = covid_cases2, FUN = sum)
 
 inc_by_AD <- pop_by_AD %>%
-  full_join(cases_by_AD,
+  dplyr::full_join(cases_by_AD,
             by=c("age_range"="age_range",
                  "site_id"="site_id"))%>%
-  mutate(new_perCapita = case_count/population*100000)
+  dplyr::mutate(new_perCapita = case_count/population*100000)
 
 # 5. Here's population stratified by age
 pop_by_A <- aggregate(population~age_range, data= pop_by_SAD, FUN = sum)
@@ -282,9 +338,9 @@ pop_by_A <- aggregate(population~age_range, data= pop_by_SAD, FUN = sum)
 cases_by_A <- aggregate(case_count~assigned_onset_date+age_range, data = covid_cases2, FUN=sum)
 
 inc_by_A <- pop_by_A %>%
-  full_join(cases_by_A,
+  dplyr::full_join(cases_by_A,
             by=c("age_range"="age_range"))%>%
-  mutate(new_perCapita = case_count/population*100000)
+  dplyr::mutate(new_perCapita = case_count/population*100000)
 
 # 6. Here's population stratified by district
 pop_by_D <-  aggregate(population~site_id, data= pop_by_SAD, FUN = sum)
@@ -292,82 +348,101 @@ pop_by_D <-  aggregate(population~site_id, data= pop_by_SAD, FUN = sum)
 cases_by_D <- aggregate(case_count~site_id+assigned_onset_date, data = covid_cases2,FUN = sum)
 
 inc_by_D <- pop_by_D %>%
-  full_join(cases_by_D,
+  dplyr::full_join(cases_by_D,
             by=c("site_id"="site_id"))%>%
-  mutate(new_perCapita = case_count/population*100000)
+  dplyr::mutate(new_perCapita = case_count/population*100000)
 
 ##################################################################################################
 ###########   This makes a function to calculate cumulative prevalence ##############################
 ####################################################################################################
 
 prevalator <- function(df=inc_by_D, var1="site_id"){
-
-require(lubridate)
-require(dplyr)
-
-date_range <- seq(from= min(inc_by_D$assigned_onset_date,
-                            na.rm = TRUE),
-                      to= max(inc_by_D$assigned_onset_date,
+  
+  require(lubridate)
+  require(dplyr)
+  
+  #This makes a sequence between the minimum and max dates in the data set
+  # this is needed so that we can assign zeros to dates without any covid cases
+  date_range <- seq(from= min(df$assigned_onset_date,
                               na.rm = TRUE),
-                          by="days")
-
-district_list <- unique(inc_by_D$site_id)
-
-date_range_index <- as.data.frame(matrix(rep(date_range,times=length(unique(district_list))),
-                                         nrow = length(unique(district_list)),byrow = TRUE))
-
-for (i in seq_along(date_range)) {
-  date_range_index[,i] <- date_range[i]
+                    to= max(df$assigned_onset_date,
+                            na.rm = TRUE),
+                    by="days")
   
-} 
+  #this creates a list of all the unique districts in Taiwan
+  district_list <- unique(df[,var1])
+  
 
-date_range_index <- cbind(district_list,date_range_index)
+  
+
+  
+  #this creates a blank (ish) data fram for use in the loop later
+  date_range_index <- as.data.frame(matrix(rep(date_range,times=length(unique(district_list))),
+                                           nrow = length(unique(district_list)),byrow = TRUE))
+  
+
+  
+  
+  for (i in seq_along(date_range)) {
+    date_range_index[,i] <- date_range[i]
+    
+  } 
+  
+
+  
+  date_range_index <- cbind(district_list,date_range_index)
  
-require(reshape2)
 
-date_range_index <- melt(date_range_index)
-
-date_range_index <- date_range_index[,-2]
-
-colnames(date_range_index) <- c("site_id","assigned_onset_date")
-
-
-
-df <- df %>%
-  full_join(date_range_index,
-            by=c("site_id"="site_id",
-                "assigned_onset_date"="assigned_onset_date"))
-
-
-
-
-df[is.na(df$new_perCapita),]$new_perCapita <- 0
-
-testik <- df %>% 
-  arrange(site_id, assigned_onset_date)%>%
-  filter(!is.na(assigned_onset_date))
-
-cumsums <- numeric()
+   
+  require(reshape2)
+  
+  date_range_index <- melt(date_range_index)
+  
 
   
-for (i in unique(testik[,var1])) {
- cumsums2 <- cumsum(testik[testik[,var1]==i,]$new_perCapita)
- cumsums <- c(cumsums,cumsums2)                  
-}
-
-#works to here
+  date_range_index <- date_range_index[,-2]
   
-testik$Cumul_cases_perCapita <- cumsums  
+  colnames(date_range_index) <- c(var1,"assigned_onset_date")
+  
 
-testik
+  
+  df <- df %>%
+    dplyr::full_join(date_range_index,
+              by = names(select(., {{var1}},"assigned_onset_date")))%>%
+    dplyr::filter(!is.na(assigned_onset_date))
+    
+
+  
+  
+  df[is.na(df$new_perCapita),]$new_perCapita <- 0
+  
+  testik <- df %>% 
+    dplyr::arrange(.data[[var1]], assigned_onset_date)%>%
+    dplyr::filter(!is.na(assigned_onset_date))
+  
+
+  
+  cumsums <- numeric()
+  
+  
+  for (i in unique(testik[,var1])) {
+    cumsums2 <- cumsum(testik[testik[,var1]==i,]$new_perCapita)
+    cumsums <- c(cumsums,cumsums2)                  
+  }
+  
+ 
+  
+  testik$Cumul_cases_perCapita <- cumsums  
+  
+  testik
 }
 
 ###########################################################################################3
 ### here's the function in action:
 
 inc_by_D <- prevalator(df=inc_by_D)
-
-
+inc_by_A <- prevalator(df=inc_by_A,var1 ="age_range")
+inc_by_S <- prevalator(df=inc_by_S, var1 = "sex")
 
 
 ####################################################
@@ -378,7 +453,8 @@ rm(cases_by_A, cases_by_AD, cases_by_D,
    cases_by_S,cases_by_SA, cases_by_SD,
    pop_by_A, pop_by_AD, pop_by_D,
    pop_by_S,pop_by_SD,pop_by_SAD,pop_by_SA,
-   Names14, pop_by_sex2, pop_by_sex3, new.names)
+   Names14, pop_by_sex2, pop_by_sex3, new.names,
+   dataURL1, temp1)
 
 
 #####################################################
@@ -389,92 +465,5 @@ rm(cases_by_A, cases_by_AD, cases_by_D,
 
 
 
-
-
-
-
-
-
-# this is all unsorted stuff and can be ignored
-#library(xlsx)
-
-
-#covid_cases <- covid_cases %>%
-# full_join(pop_by_sex_age, 
-# by=c("site_id"="site_id",
-#    "age_range"="age_range",
-#    "sex"="sex"))
-
-#covid_cases$population <- as.numeric(covid_cases$population)
-
-#covid_cases$daily_incidence <- covid_cases$case_count / covid_cases$population *100000
-
-#stratified_daily_incidence <- covid_cases%>% 
-#  select(assigned_onset_date,site_id,sex,age_range,case_count,population,daily_incidence)
-
-
-#write.xlsx(stratified_daily_incidence, file = "stratified_daily_incidence.xlsx")
-
-
-
-
-
-
-
-
-#%>%
-#dplyr::select(site_id,people_total)
-
-
-
-
-
-
-#aggregate by site_id
-
-#import and attach population 
-#district_population <- read_excel("C:/Users/rshea/Desktop/old computer/Covid/district.population.xlsx")
-#dist_pop2 <- fromJSON("https://od.moi.gov.tw/api/v1/rest/datastore/301000000A-000605-055.json", flatten = TRUE)
-
-
-
-#covid_test1 <- covid_cases %>%
-#  filter(district=="萬華區"|
-#        district=="板橋區"|
-#       district=="空值")
-
-# equivalents~~
-
-#covid_test1 <- covid_cases %>%
-# filter(district %in% c("萬華區","板橋區","空值"))
-
-#covid_cases %>%
-# filter(district %in% c("萬華區","板橋區"),
-#                       assigned_onset_date > "2021-04-23")%>%
-#count(assigned_onset_date,district,wt=case_count)%>%
-#ggplot(aes(x=assigned_onset_date,y=n,color=district))+
-# geom_line()
-
-
-#covid_cases %>%
-# filter(city %in% c("台北市","新北市"),
-#   assigned_onset_date > "2021-04-23")%>%
-# count(assigned_onset_date,district,wt=case_count)%>%
-# ggplot(aes(x=assigned_onset_date,y=n,color=district))+
-# geom_line()
-
-
-#remove covid column, we know....
-#remove imported cases
-#remove cases before april 23
-#Remove everything but case count and site_id
-#because for now that's all we care about
-#aggregate by site_id and date
-
-#local_cases <- covid_cases %>%
-# filter(imported=="否",
-#     assigned_onset_date>"2021-04-22")%>%
-#dplyr::select(site_id,assigned_onset_date, case_count)%>% 
-#count(site_id,assigned_onset_date,wt=case_count)
 
 
