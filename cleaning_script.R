@@ -25,6 +25,7 @@
 # 1. Shiny doesn't work on firefox (and maybe other browsers too?), seems to be a widespread problem
 #     especially for leaflet
 
+time28 <- Sys.time()
 
 #Covid JSon clean
 
@@ -254,6 +255,22 @@ pop_by_sex3 <- pop_by_sex2 %>%
 ##########                              ###########################
 ########################################################
 
+### This simplifies the data
+### In this step we remove all cases that happened before April 1st 2021 
+###  And all imported cases
+
+covid_cases2 <- covid_cases %>%
+  dplyr::filter(imported=="否",
+                assigned_onset_date > "2021-04-01")%>%
+  dplyr::select(assigned_onset_date,
+                case_count,
+                site_id,
+                age_range,
+                sex)
+
+
+
+
 # Sex
 
 # 1. Here's population stratified by sex,age, and district
@@ -266,7 +283,7 @@ pop_by_SAD$population <- as.numeric(pop_by_SAD$population)
 
 inc.maker <- function(pop){
   inc <- pop %>%
-    dplyr::full_join(covid_cases,
+    dplyr::full_join(covid_cases2,
               by=c("site_id"="site_id",
                    "age_range"="age_range",
                    "sex"="sex"))%>%
@@ -279,14 +296,6 @@ inc_by_SAD <- inc.maker(pop_by_SAD)
 # 2. Here's population stratified by sex and age
 pop_by_SA <- aggregate(population~sex+age_range, data= pop_by_SAD, FUN = sum)
 
-covid_cases2 <- covid_cases %>%
-  dplyr::filter(imported=="否",
-         assigned_onset_date > "2021-04-01")%>%
-  dplyr::select(assigned_onset_date,
-                case_count,
-                site_id,
-                age_range,
-                sex)
 
 cases_by_SA <- aggregate(case_count~assigned_onset_date+age_range+sex, data=covid_cases2, FUN = sum)
 
@@ -351,6 +360,21 @@ inc_by_D <- pop_by_D %>%
   dplyr::full_join(cases_by_D,
             by=c("site_id"="site_id"))%>%
   dplyr::mutate(new_perCapita = case_count/population*100000)
+
+
+####################################################
+#####    Remove extra datasets and functions  ######
+####################################################
+
+rm(cases_by_A, cases_by_AD, cases_by_D,
+   cases_by_S,cases_by_SA, cases_by_SD,
+   pop_by_A, pop_by_AD, pop_by_D,
+   pop_by_S,pop_by_SD,pop_by_SAD,pop_by_SA,
+   Names14, pop_by_sex2, pop_by_sex3, new.names,
+   dataURL1, temp1)
+
+
+
 
 ##################################################################################################
 ###########   This makes a function to calculate cumulative prevalence ##############################
@@ -437,6 +461,297 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
   testik
 }
 
+prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
+  require(lubridate)
+  require(dplyr)
+  
+  #This makes a sequence between the minimum and max dates in the data set
+  # this is needed so that we can assign zeros to dates without any covid cases
+  date_range <- seq(from= min(df$assigned_onset_date,
+                              na.rm = TRUE),
+                    to= max(df$assigned_onset_date,
+                            na.rm = TRUE),
+                    by="days")
+  
+  #this creates a list of all the unique districts in Taiwan
+  district_list <- unique(df[,vars[1]])
+  age_list <- unique(df[,vars[2]])
+  
+  bin_id <- character()
+  
+  for(i in district_list){
+    bin_id <- c(bin_id, paste(i,age_list, sep = "."))
+  }
+
+  
+  
+  #this creates a blank (ish) dataframe for use in the loop later
+  date_range_index <- as.data.frame(matrix(rep(date_range,times=length(unique(bin_id))),
+                                           nrow = length(unique(bin_id)),byrow = TRUE))
+  
+  
+  
+  
+  for (i in seq_along(date_range)) {
+    date_range_index[,i] <- date_range[i]
+    
+  } 
+  
+  
+  
+  date_range_index <- cbind(bin_id,date_range_index)
+  
+  
+  
+  require(reshape2)
+  
+  date_range_index <- melt(date_range_index)
+  
+
+  
+  date_range_index <- date_range_index[,-2]
+  
+
+  
+  colnames(date_range_index)[2] <- "assigned_onset_date"
+  
+  
+  sheep <- df%>%    
+    dplyr::select(., {{vars}}) 
+  
+  sheep$bin_id <-paste(sheep[,1],sheep[,2],sep = ".")
+  
+
+  
+  df$bin_id <- sheep$bin_id
+  
+  df <- df %>% 
+    dplyr::select(., -{{vars}})
+  
+
+ 
+  
+  df <- df %>%
+    dplyr::full_join(date_range_index,
+                     by = c("bin_id"="bin_id",
+                            "assigned_onset_date"="assigned_onset_date"))%>%
+    dplyr::filter(!is.na(assigned_onset_date))
+
+  
+
+  df[is.na(df$new_perCapita),]$new_perCapita <- 0
+  
+  testik <- df %>% 
+    dplyr::arrange(bin_id, assigned_onset_date)%>%
+    dplyr::filter(!is.na(assigned_onset_date))
+  
+  
+  cumsums <- numeric()
+ 
+
+  
+  for (i in unique(testik$bin_id)) {
+    cumsums2 <- cumsum(testik[testik$bin_id==i,]$new_perCapita)
+    cumsums <- c(cumsums,cumsums2)                  
+  }
+  
+  testik$Cumul_cases_perCapita <- cumsums  
+  
+  # This fixes names and stuff
+  sheep2 <- unlist(strsplit(testik$bin_id,"[.]"))
+  
+  sheep.seq1 <- seq(1,length(sheep2),2)
+  sheep.seq2 <- seq(2,length(sheep2),2)
+  
+  poodle1 <- sheep2[sheep.seq1]
+  poodle2 <- sheep2[sheep.seq2]
+  
+  
+
+  # sensible variable names hahahahahaha
+  
+  Goatss <- colnames(testik)
+  
+  testik <- cbind(poodle1,poodle2,testik)
+  
+  
+  
+  colnames(testik)<- c(vars,Goatss)
+
+  
+  testik
+  
+}
+
+# The final dataset with all three variables (4 if you include time)
+# will probably be easier and faster to run outside of a generilzable function...
+# Especially because we only have one of these to modify
+
+prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
+  require(lubridate)
+  require(dplyr)
+  
+  message("This function will break at some point in the future because as the number of dates increase the memory requirements for this function will exceed the computer's ram without additional action from the user. It broke for me around 7 million rows. The number of rows is so large because nrow = n(age groups)*n(days in the date range)*n(districts)*n(sex). For possible workarounds see: https://stackoverflow.com/questions/5233769/practical-limits-of-r-data-frame")
+  
+  #This makes a sequence between the minimum and max dates in the data set
+  # this is needed so that we can assign zeros to dates without any covid cases
+  date_range <- seq(from= min(df$assigned_onset_date,
+                              na.rm = TRUE),
+                    to= max(df$assigned_onset_date,
+                            na.rm = TRUE),
+                    by="days")
+  
+  #this creates a list of all the unique districts in Taiwan
+  district_list <- unique(df[,vars[1]])
+  age_list <- unique(df[,vars[2]])
+  sex_list <- unique(df[,vars[3]])
+  
+  bin_id2 <- character()
+  
+  for(i in age_list){
+    bin_id2 <- c(bin_id2, paste(district_list,i, sep = "."))
+  }
+  
+  
+  
+  bin_id <- character()
+  
+  for(i in sex_list){
+    bin_id <- c(bin_id, paste(bin_id2,i, sep = "."))
+  }
+  
+
+  
+  #this creates a blank (ish) dataframe for use in the loop later
+  date_range_index <- as.data.frame(matrix(rep(date_range,times=length(unique(bin_id))),
+                                           nrow = length(unique(bin_id)),byrow = TRUE))
+  
+
+  
+  
+  
+  
+  for (i in seq_along(date_range)) {
+    date_range_index[,i] <- date_range[i]
+    
+  } 
+  
+
+  
+  
+  date_range_index <- cbind(bin_id,date_range_index)
+  
+
+  
+  require(reshape2)
+  
+  date_range_index <- melt(date_range_index)
+  
+
+  
+  
+  
+  date_range_index <- date_range_index[,-2]
+  
+ 
+  
+  
+  
+  colnames(date_range_index)[2] <- "assigned_onset_date"
+ 
+  
+  sheep <- df%>%    
+    dplyr::select(., {{vars}}) 
+
+  
+
+  
+  sheep$bin_id <-paste(sheep[,1],sheep[,2],sheep[,3],sep = ".")
+  
+
+  
+  df$bin_id <- sheep$bin_id
+  
+
+  
+  df <- df %>% 
+    dplyr::select(., -{{vars}})
+  
+
+  
+  
+  df <- df %>%
+    dplyr::full_join(date_range_index,
+                     by = c("bin_id"="bin_id",
+                            "assigned_onset_date"="assigned_onset_date"))%>%
+    dplyr::filter(!is.na(assigned_onset_date))
+  
+  
+  
+  df[is.na(df$new_perCapita),]$new_perCapita <- 0
+  
+  df
+  
+  
+  
+  testik <- df %>% 
+    dplyr::arrange(bin_id, assigned_onset_date)%>%
+    dplyr::filter(!is.na(assigned_onset_date))
+  
+
+  
+  
+  cumsums <- numeric()
+  
+  
+  
+  for (i in unique(testik$bin_id)) {
+    cumsums2 <- cumsum(testik[testik$bin_id==i,]$new_perCapita)
+    cumsums <- c(cumsums,cumsums2)                  
+  }
+  
+  
+
+  
+  testik$Cumul_cases_perCapita <- cumsums  
+  
+
+  
+  # This fixes names and stuff
+  sheep2 <- unlist(strsplit(testik$bin_id,"[.]"))
+  
+  sheep.seq1 <- seq(1,length(sheep2),3)
+  sheep.seq2 <- seq(2,length(sheep2),3)
+  sheep.seq3 <- seq(3,length(sheep2),3)
+  
+  poodle1 <- sheep2[sheep.seq1]
+  poodle2 <- sheep2[sheep.seq2]
+  poodle3 <- sheep2[sheep.seq3]
+  
+  
+  # sensible variable names hahahahahaha
+  
+  Goatss <- colnames(testik)
+  
+  testik <- cbind(poodle1,poodle2,poodle3,testik)
+  
+  
+  
+  colnames(testik)<- c(vars,Goatss)
+  
+  
+  testik
+  
+}
+
+
+
+
+
+
+ 
+
+
 ###########################################################################################3
 ### here's the function in action:
 
@@ -444,17 +759,29 @@ inc_by_D <- prevalator(df=inc_by_D)
 inc_by_A <- prevalator(df=inc_by_A,var1 ="age_range")
 inc_by_S <- prevalator(df=inc_by_S, var1 = "sex")
 
+time762 <- Sys.time()
 
-####################################################
-#####    Remove extra datasets and functions  ######
-####################################################
+inc_by_AD <- prevalator2()
 
-rm(cases_by_A, cases_by_AD, cases_by_D,
-   cases_by_S,cases_by_SA, cases_by_SD,
-   pop_by_A, pop_by_AD, pop_by_D,
-   pop_by_S,pop_by_SD,pop_by_SAD,pop_by_SA,
-   Names14, pop_by_sex2, pop_by_sex3, new.names,
-   dataURL1, temp1)
+time766 <- Sys.time()
+
+inc_by_SA <- prevalator2(df=inc_by_SA, vars = c("sex","age_range"))
+inc_by_SD <- prevalator2(df=inc_by_SD, vars = c("site_id","sex"))
+
+time771 <- Sys.time()
+
+inc_by_SAD <- prevalator3()
+
+time775 <- Sys.time()
+
+
+###################################################
+####   Time report    ############################
+##################################################
+
+
+
+
 
 
 #####################################################
