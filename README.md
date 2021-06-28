@@ -27,10 +27,10 @@ inc_by_AD  = incidence stratified by age and district
 S= sex, A =age, D = district   
 
 ## Potential pitfalls
-Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. Different R functions appear to prefer different encoding formats. Finding the right encoding also probably depends on your computer's system language setting. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts. If one doesn't work, try the other.
-If you run source() the encoding will matter. 
-Shiny apparently doesn't work well on firefox (especially for leaflet QQ) 
-And I'm not the only one!: https://stackoverflow.com/questions/65116942/firefox-leaflet-not-displaying-map-shapes-in-shiny-app-default-page-when-publish 
+-Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. Different R functions appear to prefer different encoding formats. Finding the right encoding also probably depends on your computer's system language setting. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts. If one doesn't work, try the other.
+-If you run source() the encoding will matter. 
+-Shiny apparently doesn't work well on firefox (especially for leaflet QQ) 
+-And I'm not the only one!: https://stackoverflow.com/questions/65116942/firefox-leaflet-not-displaying-map-shapes-in-shiny-app-default-page-when-publish 
 
 ## If you just want to look at the pictures
 
@@ -39,7 +39,10 @@ And I'm not the only one!: https://stackoverflow.com/questions/65116942/firefox-
 Left side: New locally acquired cases per 100,000 people from 4/23/2021    
 Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)   
    
-      
+<img src="https://github.com/Russell-Shean/Covid_SHINY_MAP/raw/main/quanguo_prev.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwancovid/raw/main/beibu_prev.gif" width="400" height=auto />
+
+Left side: cumulative locally acquired cases per 100,000 people from 4/23/2021    
+Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)      
          
          
 
