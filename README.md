@@ -5,7 +5,7 @@ Cleaning script
  - Automatically imports covid data from Taiwan CDC JSON
  - Automatically imports population data from Ministry of interior website
  - Calculates daily incidence stratified by various combinations of age,sex,and district.    
- - 06-25-2021 update: Calculates cumulative prevalence by age, sex and district
+ - 06-258-2021 update: Calculates cumulative prevalence for all combinations of age,sex, and district
 
 Maps and gifs script
 - Makes animated maps of daily incidence by district
