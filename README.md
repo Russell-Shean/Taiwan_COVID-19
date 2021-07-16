@@ -2,7 +2,7 @@
 
 Cleaning script
  - Includes the latest version of my script for cleaning Covid and population data
- - Automatically imports covid data from <a href="https://data.cdc.gov.tw/"> Taiwan CDC JSON </a>
+ - Automatically imports covid data from <a href="https://data.cdc.gov.tw/dataset/aagsdctable-day-19cov"> Taiwan CDC JSON </a>
  - Automatically imports population data from Ministry of interior website
  - Calculates daily incidence stratified by various combinations of age,sex,and district.    
  - 06-258-2021 update: Calculates cumulative prevalence for all combinations of age,sex, and district
