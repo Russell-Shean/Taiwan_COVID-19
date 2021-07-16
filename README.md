@@ -28,8 +28,6 @@ S= sex, A =age, D = district
 ## Potential pitfalls
  - Chinese characters, especially traditional characters as used in Taiwan, don't always encode super well. Different R functions appear to prefer different encoding formats. Finding the right encoding also probably depends on your computer's system language setting. That's why there's both a UTF8 and a BIG5 version of the cleaning scripts. If one doesn't work, try the other.
  - If you run source() the encoding will matter. 
- - Shiny apparently doesn't work well on firefox (especially for leaflet QQ) 
- - And I'm <a href="https://stackoverflow.com/questions/65116942/firefox-leaflet-not-displaying-map-shapes-in-shiny-app-default-page-when-publish">not the only one</a>!  
 
 ## If you just want to look at the pictures
 
