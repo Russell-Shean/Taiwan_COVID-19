@@ -770,9 +770,9 @@ inc_by_SD <- prevalator2(df=inc_by_SD, vars = c("site_id","sex"))
 
 time771 <- Sys.time()
 
-inc_by_SAD <- prevalator3()
+#inc_by_SAD <- prevalator3()
 
-time775 <- Sys.time()
+
 
 
 ###################################################

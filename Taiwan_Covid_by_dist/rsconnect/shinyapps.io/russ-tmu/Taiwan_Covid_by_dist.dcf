@@ -1,0 +1,13 @@
+name: Taiwan_Covid_by_dist
+title: Taiwan_Covid_by_dist
+username:
+account: russ-tmu
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5239680
+bundleId: 5313443
+url: https://russ-tmu.shinyapps.io/Taiwan_Covid_by_dist/
+when: 1638348563.96738
+lastSyncTime: 1638348563.96738
+asMultiple: FALSE
+asStatic: FALSE
