@@ -281,9 +281,9 @@ pop_by_SAD <- melt(pop_by_sex3, id.vars = c("sex","site_id"))%>%
 
 pop_by_SAD$population <- as.numeric(pop_by_SAD$population)
 
-inc.maker <- function(pop){
+inc.maker <- function(pop, case_data){
   inc <- pop %>%
-    dplyr::full_join(covid_cases2,
+    dplyr::full_join(case_data,
               by=c("site_id"="site_id",
                    "age_range"="age_range",
                    "sex"="sex"))%>%
@@ -291,7 +291,7 @@ inc.maker <- function(pop){
   inc
 }
 
-inc_by_SAD <- inc.maker(pop_by_SAD)
+inc_by_SAD <- inc.maker(pop=pop_by_SAD, case_data = covid_cases2)
 
 # 2. Here's population stratified by sex and age
 pop_by_SA <- aggregate(population~sex+age_range, data= pop_by_SAD, FUN = sum)
@@ -366,11 +366,23 @@ inc_by_D <- pop_by_D %>%
 #####    Remove extra datasets and functions  ######
 ####################################################
 
-rm(cases_by_A, cases_by_AD, cases_by_D,
-   cases_by_S,cases_by_SA, cases_by_SD,
-   pop_by_A, pop_by_AD, pop_by_D,
-   pop_by_S,pop_by_SD,pop_by_SAD,pop_by_SA,
-   Names14, pop_by_sex2, pop_by_sex3, new.names,
+rm(cases_by_A, 
+   cases_by_AD, 
+   cases_by_D,
+   cases_by_S,
+   cases_by_SA, 
+   cases_by_SD,
+   #pop_by_A, 
+   #pop_by_AD, 
+   #pop_by_D,
+   #pop_by_S,
+   #pop_by_SD,
+   #pop_by_SAD,
+   #pop_by_SA,
+   #Names14, 
+   #pop_by_sex2, 
+   #pop_by_sex3, 
+   new.names,
    dataURL1, temp1)
 
 
@@ -440,25 +452,25 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
   
   df[is.na(df$new_perCapita),]$new_perCapita <- 0
   
-  testik <- df %>% 
+  stratified_cases <- df %>% 
     dplyr::arrange(.data[[var1]], assigned_onset_date)%>%
     dplyr::filter(!is.na(assigned_onset_date))
   
 
   
-  cumsums <- numeric()
+  cumulative_sums <- numeric()
   
   
-  for (i in unique(testik[,var1])) {
-    cumsums2 <- cumsum(testik[testik[,var1]==i,]$new_perCapita)
-    cumsums <- c(cumsums,cumsums2)                  
+  for (i in unique(stratified_cases[,var1])) {
+    cumulative_sums2 <- cumsum(stratified_cases[stratified_cases[,var1]==i,]$new_perCapita)
+    cumulative_sums <- c(cumulative_sums,cumulative_sums2)                  
   }
   
  
   
-  testik$Cumul_cases_perCapita <- cumsums  
+  stratified_cases$Cumul_cases_perCapita <- cumulative_sums  
   
-  testik
+  stratified_cases
 }
 
 prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
@@ -516,14 +528,14 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
   colnames(date_range_index)[2] <- "assigned_onset_date"
   
   
-  sheep <- df%>%    
+  df_simplified <- df%>%    
     dplyr::select(., {{vars}}) 
   
-  sheep$bin_id <-paste(sheep[,1],sheep[,2],sep = ".")
+  df_simplified$bin_id <-paste(df_simplified[,1],df_simplified[,2],sep = ".")
   
 
   
-  df$bin_id <- sheep$bin_id
+  df$bin_id <- df_simplified$bin_id
   
   df <- df %>% 
     dplyr::select(., -{{vars}})
@@ -541,45 +553,45 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
 
   df[is.na(df$new_perCapita),]$new_perCapita <- 0
   
-  testik <- df %>% 
+  stratified_cases <- df %>% 
     dplyr::arrange(bin_id, assigned_onset_date)%>%
     dplyr::filter(!is.na(assigned_onset_date))
   
   
-  cumsums <- numeric()
+  cumulative_sums <- numeric()
  
 
   
-  for (i in unique(testik$bin_id)) {
-    cumsums2 <- cumsum(testik[testik$bin_id==i,]$new_perCapita)
-    cumsums <- c(cumsums,cumsums2)                  
+  for (i in unique(stratified_cases$bin_id)) {
+    cumulative_sums2 <- cumsum(stratified_cases[stratified_cases$bin_id==i,]$new_perCapita)
+    cumulative_sums <- c(cumulative_sums,cumulative_sums2)                  
   }
   
-  testik$Cumul_cases_perCapita <- cumsums  
+  stratified_cases$Cumul_cases_perCapita <- cumulative_sums  
   
   # This fixes names and stuff
-  sheep2 <- unlist(strsplit(testik$bin_id,"[.]"))
+  df_simplified2 <- unlist(strsplit(stratified_cases$bin_id,"[.]"))
   
-  sheep.seq1 <- seq(1,length(sheep2),2)
-  sheep.seq2 <- seq(2,length(sheep2),2)
+  df_simplified.seq1 <- seq(1,length(df_simplified2),2)
+  df_simplified.seq2 <- seq(2,length(df_simplified2),2)
   
-  poodle1 <- sheep2[sheep.seq1]
-  poodle2 <- sheep2[sheep.seq2]
+  poodle1 <- df_simplified2[df_simplified.seq1]
+  poodle2 <- df_simplified2[df_simplified.seq2]
   
   
 
   # sensible variable names hahahahahaha
   
-  Goatss <- colnames(testik)
+  Goatss <- colnames(stratified_cases)
   
-  testik <- cbind(poodle1,poodle2,testik)
+  stratified_cases <- cbind(poodle1,poodle2,stratified_cases)
   
   
   
-  colnames(testik)<- c(vars,Goatss)
+  colnames(stratified_cases)<- c(vars,Goatss)
 
   
-  testik
+  stratified_cases
   
 }
 
@@ -608,12 +620,13 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
   
   bin_id2 <- character()
   
+  # this creates a list of district and age combinations
   for(i in age_list){
     bin_id2 <- c(bin_id2, paste(district_list,i, sep = "."))
   }
   
   
-  
+  #this creates a list of district, age and sex combinations
   bin_id <- character()
   
   for(i in sex_list){
@@ -623,8 +636,13 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
 
   
   #this creates a blank (ish) dataframe for use in the loop later
-  date_range_index <- as.data.frame(matrix(rep(date_range,times=length(unique(bin_id))),
-                                           nrow = length(unique(bin_id)),byrow = TRUE))
+  date_range_index <- as.data.frame(
+    matrix(
+          rep(date_range,
+                          times=length(unique(bin_id))),   #this creates multiple copies of each date
+                                                           #one for each district,age,sex combination
+          nrow = length(unique(bin_id)),                   
+          byrow = TRUE))
   
 
   
@@ -660,17 +678,17 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
   colnames(date_range_index)[2] <- "assigned_onset_date"
  
   
-  sheep <- df%>%    
+  df_simplified <- df%>%    
     dplyr::select(., {{vars}}) 
 
   
 
   
-  sheep$bin_id <-paste(sheep[,1],sheep[,2],sheep[,3],sep = ".")
+  df_simplified$bin_id <-paste(df_simplified[,1],df_simplified[,2],df_simplified[,3],sep = ".")
   
 
   
-  df$bin_id <- sheep$bin_id
+  df$bin_id <- df_simplified$bin_id
   
 
   
@@ -694,53 +712,53 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
   
   
   
-  testik <- df %>% 
+  stratified_cases <- df %>% 
     dplyr::arrange(bin_id, assigned_onset_date)%>%
     dplyr::filter(!is.na(assigned_onset_date))
   
 
   
   
-  cumsums <- numeric()
+  cumulative_sums <- numeric()
   
   
   
-  for (i in unique(testik$bin_id)) {
-    cumsums2 <- cumsum(testik[testik$bin_id==i,]$new_perCapita)
-    cumsums <- c(cumsums,cumsums2)                  
+  for (i in unique(stratified_cases$bin_id)) {
+    cumulative_sums2 <- cumsum(stratified_cases[stratified_cases$bin_id==i,]$new_perCapita)
+    cumulative_sums <- c(cumulative_sums,cumulative_sums2)                  
   }
   
   
 
   
-  testik$Cumul_cases_perCapita <- cumsums  
+  stratified_cases$Cumul_cases_perCapita <- cumulative_sums  
   
 
   
   # This fixes names and stuff
-  sheep2 <- unlist(strsplit(testik$bin_id,"[.]"))
+  df_simplified2 <- unlist(strsplit(stratified_cases$bin_id,"[.]"))
   
-  sheep.seq1 <- seq(1,length(sheep2),3)
-  sheep.seq2 <- seq(2,length(sheep2),3)
-  sheep.seq3 <- seq(3,length(sheep2),3)
+  df_simplified.seq1 <- seq(1,length(df_simplified2),3)
+  df_simplified.seq2 <- seq(2,length(df_simplified2),3)
+  df_simplified.seq3 <- seq(3,length(df_simplified2),3)
   
-  poodle1 <- sheep2[sheep.seq1]
-  poodle2 <- sheep2[sheep.seq2]
-  poodle3 <- sheep2[sheep.seq3]
+  poodle1 <- df_simplified2[df_simplified.seq1]
+  poodle2 <- df_simplified2[df_simplified.seq2]
+  poodle3 <- df_simplified2[df_simplified.seq3]
   
   
   # sensible variable names hahahahahaha
   
-  Goatss <- colnames(testik)
+  Goatss <- colnames(stratified_cases)
   
-  testik <- cbind(poodle1,poodle2,poodle3,testik)
-  
-  
-  
-  colnames(testik)<- c(vars,Goatss)
+  stratified_cases <- cbind(poodle1,poodle2,poodle3,stratified_cases)
   
   
-  testik
+  
+  colnames(stratified_cases)<- c(vars,Goatss)
+  
+  
+  stratified_cases
   
 }
 
