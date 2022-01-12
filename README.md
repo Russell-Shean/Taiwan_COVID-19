@@ -33,7 +33,7 @@ S= sex, A =age, D = district
 
 Here's a map I made using this data: https://tulipsfortaiwan.github.io/Covid_528_map.html
 
-<img src="https://github.com/Russell-Shean/Taiwan_COVID-19/raw/main/Graphs%20and%20GIFS/quanguo_inc.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwan_COVID-19/Graphs_and_GIFS/raw/main/Graphs%20and%20GIFS/beibu_inc.gif" width="400" height=auto />
+<img src="https://github.com/Russell-Shean/Taiwan_COVID-19/raw/main/Graphs_and_GIFS/quanguo_inc.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwan_COVID-19/raw/main/Graphs_and_GIFS/beibu_inc.gif" width="400" height=auto />
 
 Left side: New locally acquired cases per 100,000 people from 4/23/2021    
 Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)   
