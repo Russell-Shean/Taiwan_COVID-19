@@ -413,7 +413,6 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
   district_list <- unique(df[,var1])
   
 
-  
 
   
   #this creates a blank (ish) data frame for use in the loop later
@@ -427,7 +426,7 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
 # that step just created a matrix of all the dates in the date range
 # with each row containing a vector of all the dates
 # and the number of rows equal to the number of districts
-  
+
 
 # then this step changes the data frame we just created
 # and makes each column a vector of the same date repeated for each district (row)
@@ -439,14 +438,15 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
   for (i in seq_along(date_range)) {
     date_range_index[,i] <- date_range[i]
   } 
-  
+ 
+
 
   #this binds the date matrix we just created to the list of districts
   #first column is districts
   #second column is the date matrix
   
   date_range_index <- cbind(district_list,date_range_index)
- 
+  
 
    # this changes the format to long form
   require(reshape2)
@@ -454,12 +454,14 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
   date_range_index <- melt(date_range_index)
   
 
+
   # this removes the second column
   date_range_index <- date_range_index[,-2]
   
   # this changes column names
   colnames(date_range_index) <- c(var1,"assigned_onset_date")
-  
+ 
+ 
   # now we have a long data frame with all of the district date combinations
 
   # this joins the covid cases data to the district-date combos dataframe that we just made
@@ -472,6 +474,11 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
   
   # this changes all the NA incidence values to zero
   df[is.na(df$new_perCapita),]$new_perCapita <- 0
+  
+  # and case counts to zero
+  df[is.na(df$case_count),]$case_count <- 0
+  
+
   
   #this rearranges the data frame by putting all the districts together 
   #and then arranging the dates sequentially
@@ -486,6 +493,7 @@ prevalator <- function(df=inc_by_D, var1="site_id"){
     dplyr::arrange(.data[[var1]], assigned_onset_date)%>%
     dplyr::filter(!is.na(assigned_onset_date))
   
+
 
   # this creates an empty vector
   cumulative_sums <- numeric()
@@ -537,6 +545,8 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
                             na.rm = TRUE),
                     by="days")
   
+
+  
   #this creates a list of all the unique districts in Taiwan
   district_list <- unique(df[,vars[1]])
   # and this creates a list of all the unique age groups
@@ -547,10 +557,12 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
   
   #this creates a vector with all the possible district,date, age combinations
   for(i in district_list){
-    bin_id <- c(bin_id, paste(i,age_list, sep = "_"))
+    bin_id <- c(bin_id, paste(i,age_list, sep = "."))
   }
 
-  
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(age_list,district_list)
   
   #this creates a blank (ish) dataframe for use in the loop later
   date_range_index <- as.data.frame(
@@ -558,7 +570,7 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
                                     times=length(unique(bin_id))),
                                     nrow = length(unique(bin_id)),
                                     byrow = TRUE))
-  
+
   
   # that step just created a matrix of all the dates in the date range
   # with each row containing a vector of all the dates
@@ -582,10 +594,19 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
     
   } 
   
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(date_range)
+  
   #this binds each unique district-age combination to the date matrix we just made
   
   date_range_index <- cbind(bin_id,date_range_index)
   
+
+  
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(bin_id)
   
   #this puts data in long format
   require(reshape2)
@@ -605,9 +626,12 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
     dplyr::select(., {{vars}}) 
   
   # this pastes the age groups and districts together
-  # and then attaches the groupings to the original datafram
-  df$bin_id <-paste(df_simplified[,1],df_simplified[,2],sep = "_")
+  # and then attaches the groupings to the original dataframe
+  df$bin_id <-paste(df_simplified[,1],df_simplified[,2],sep = ".")
   
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(df_simplified)
 
   # this removes the age group and district groups from the covid data
   # the same information is still contained in the bin_id
@@ -626,11 +650,18 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
                             "assigned_onset_date"="assigned_onset_date"))%>%
     dplyr::filter(!is.na(assigned_onset_date))
 
+
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(date_range_index)
   
   #this changes NA incidence values to zero
   df[is.na(df$new_perCapita),]$new_perCapita <- 0
- 
   
+  # and case counts to zero
+  df[is.na(df$case_count),]$case_count <- 0
+ 
+
   #this rearranges the data frame by putting all the district age group combinations together 
   #and then arranges the dates sequentially
   # e.g.                       
@@ -653,8 +684,11 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
     dplyr::arrange(bin_id, assigned_onset_date)%>%
     dplyr::filter(!is.na(assigned_onset_date))
   
+
+  
   # this creates an empty vector
   cumulative_sums <- numeric()
+  cumulative_sums2 <- numeric()
  
   # this loops through all the districts
   # and calculates cumulative sums for each district-age group combination's daily incidence
@@ -681,6 +715,8 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
     cumulative_sums <- c(cumulative_sums,cumulative_sums2)                  
   }
   
+
+  
   #then this attaches that vector onto the data frame
   # e.g.                       
   #       bin_id               date       incidence   cumulative incidence
@@ -700,12 +736,18 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
   # to:   c(1,21,23,3,6,9,4,4,20,1,2,3)
   stratified_cases$Cumul_cases_perCapita <- cumulative_sums  
   
+
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(cumulative_sums,cumulative_sums2)
+  
   # This splits the bin_id back into district and age group
   # and creates a vector of alternating districts and age groups
   # for all the old bin ids
   #e.g.     c(dist1, ages 1to5, dist1, ages 1to5, dist1, ages 1to 5, dist1, ages 5to10)
-  split_bin_ids <- unlist(strsplit(stratified_cases$bin_id,"_"))
+  split_bin_ids <- unlist(strsplit(stratified_cases$bin_id,"[.]"))
   
+
   #this creates one sequence of odd numbers
   #and one sequence of even numbers
   # for the length (number of rows) of the dataframe
@@ -716,7 +758,7 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
   # the odds will be districts and the evens will be age groups
   
   districts <- split_bin_ids[df_column_name_index1]
-  age_groups <- split_bin_ids[df_column_name_index1]
+  age_groups <- split_bin_ids[df_column_name_index2]
   
   
 
@@ -738,11 +780,12 @@ prevalator2 <- function(df=inc_by_SAD, vars=c("site_id","age_range")){
 
 # three variable stratification
 prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
+  
+  #load  date-time and data manipulation libraries
   require(lubridate)
   require(dplyr)
   
-  message("This function will break at some point in the future because as the number of dates increase the memory requirements for this function will exceed the computer's ram without additional action from the user. It broke for me around 7 million rows. The number of rows is so large because nrow = n(age groups)*n(days in the date range)*n(districts)*n(sex). For possible workarounds see: https://stackoverflow.com/questions/5233769/practical-limits-of-r-data-frame")
-  
+
   #This makes a sequence between the minimum and max dates in the data set
   # this is needed so that we can assign zeros to dates without any covid cases
   date_range <- seq(from= min(df$assigned_onset_date,
@@ -752,10 +795,12 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
                     by="days")
   
   #this creates a list of all the unique districts in Taiwan
+  # unique age groups and unique sexes (male and female)
   district_list <- unique(df[,vars[1]])
   age_list <- unique(df[,vars[2]])
   sex_list <- unique(df[,vars[3]])
   
+  #this creates an empty vector
   bin_id2 <- character()
   
   # this creates a list of district and age combinations
@@ -771,19 +816,38 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
     bin_id <- c(bin_id, paste(bin_id2,i, sep = "."))
   }
   
-
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(age_list,district_list, sex_list, bin_id2)
+  
   
   #this creates a blank (ish) dataframe for use in the loop later
   date_range_index <- as.data.frame(
     matrix(
           rep(date_range,
-                          times=length(unique(bin_id))),   #this creates multiple copies of each date
-                                                           #one for each district,age,sex combination
+          times=length(unique(bin_id))),   #this creates multiple copies of each date
+                                           #one for each district,age,sex combination
           nrow = length(unique(bin_id)),                   
           byrow = TRUE))
   
-
+  # that step just created a matrix of all the dates in the date range
+  # with each row containing a vector of all the dates
+  # and the number of rows equal to the number of unique district_AgeGroup_sex combinations
   
+  # then this step changes the data frame we just created
+  # and makes each column a vector of the same date repeated for each district (row)
+  # e.g.                            date 1  date 2  date 3
+  #  dist 1 ages 1to5_male          1/11   1/12    1/13
+  #  dist 1 ages 5to10_male         1/11   1/12    1/13
+  #  dist 1 ages 10to20_male        1/11   1/12    1/13
+  #  dist 2 ages 1to5_male          1/11   1/12    1/13
+  #  dist 2 ages 5to10_male         1/11   1/12    1/13
+  #  dist 2 ages 10to20_male        1/11   1/12    1/13
+  #  dist 3 ages 1to5_male          1/11   1/12    1/13
+  #  dist 3 ages 5to10_male         1/11   1/12    1/13
+  #  dist 3 ages 10to20_male        1/11   1/12    1/13
+  #  dist 1 ages 1to5_female        1/11   1/12    1/13
+  #  dist 1 ages 5to10_female       1/11   1/12    1/13
   
   
   
@@ -792,13 +856,21 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
     
   } 
   
-
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(date_range)
   
+
+  #this binds each unique district-age combination to the date matrix we just made (see above example)
   
   date_range_index <- cbind(bin_id,date_range_index)
   
-
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(bin_id)
   
+
+  #this puts the data frame we just made into the long form
   require(reshape2)
   
   date_range_index <- melt(date_range_index)
@@ -806,36 +878,40 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
 
   
   
-  
+  # this removes the second column
   date_range_index <- date_range_index[,-2]
   
  
   
   
-  
+  #this changes the column name 
   colnames(date_range_index)[2] <- "assigned_onset_date"
  
-  
+  # this selects the age groups, districts and sexes from the original covid data
   df_simplified <- df%>%    
     dplyr::select(., {{vars}}) 
 
   
 
+  #and pastes them together to create a bin_id column on the original data set
+  df$bin_id <-paste(df_simplified[,1],df_simplified[,2],df_simplified[,3],sep = ".")
   
-  df_simplified$bin_id <-paste(df_simplified[,1],df_simplified[,2],df_simplified[,3],sep = ".")
+
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(df_simplified)
   
 
   
-  df$bin_id <- df_simplified$bin_id
-  
 
-  
+  #this removes the duplicate copy we're about to create
   df <- df %>% 
     dplyr::select(., -{{vars}})
   
 
   
-  
+  #this creates a full (outer join) between all the possible dates 
+  # and the dates we actually had covid on
   df <- df %>%
     dplyr::full_join(date_range_index,
                      by = c("bin_id"="bin_id",
@@ -843,59 +919,76 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
     dplyr::filter(!is.na(assigned_onset_date))
   
   
-  
+  # this changes NA incidence vaules to zero
   df[is.na(df$new_perCapita),]$new_perCapita <- 0
   
-  df
+  # and case counts to zero
+  df[is.na(df$case_count),]$case_count <- 0
   
   
-  
+  # this rearranges the data frame by unique bin_id 
+  #and then secondarily by date
   stratified_cases <- df %>% 
     dplyr::arrange(bin_id, assigned_onset_date)%>%
     dplyr::filter(!is.na(assigned_onset_date))
   
 
   
-  
+  #this creates an empty vector
   cumulative_sums <- numeric()
+  cumulative_sums2 <- numeric()
   
-  
-  
+  # this calculates cumulative sums for all the dates
+  # for each age-sex-district combination
+  # see prevelator2() for an example
   for (i in unique(stratified_cases$bin_id)) {
     cumulative_sums2 <- cumsum(stratified_cases[stratified_cases$bin_id==i,]$new_perCapita)
     cumulative_sums <- c(cumulative_sums,cumulative_sums2)                  
   }
   
-  
 
   
+
+  # this attaches the cumulative sums onto the original data frame
   stratified_cases$Cumul_cases_perCapita <- cumulative_sums  
   
+  #this removes intermediate data structures
+  # maybe this will make the function faster?
+  rm(cumulative_sums2,cumulative_sums)
+  
+
+  # This splits the bin_id back into district and age group
+  # and creates a vector of alternating districts and age groups
+  # for all the old bin ids
+  #e.g.     c(dist1, ages 1to5, dist1, ages 1to5, dist1, ages 1to 5, dist1, ages 5to10)
+  split_bin_ids <- unlist(strsplit(stratified_cases$bin_id,"[.]"))
+  
+  #this creates one sequence of odd numbers
+  #and one sequence of even numbers
+  # for the length (number of rows) of the dataframe
+  df_column_name_index1 <- seq(1,length(split_bin_ids),3)
+  df_column_name_index2 <- seq(2,length(split_bin_ids),3)
+  df_column_name_index3 <- seq(3,length(split_bin_ids),3)
+  
+  
+  #because of the alternating dist, age group, dist pattern
+  # the odds will be districts and the evens will be age groups
+  
+  districts <- split_bin_ids[df_column_name_index1]
+  age_groups <- split_bin_ids[df_column_name_index2]
+  sexes     <-  split_bin_ids[df_column_name_index3]
 
   
-  # This fixes names and stuff
-  df_simplified2 <- unlist(strsplit(stratified_cases$bin_id,"[.]"))
+  #this creates a vector with all the column names from the main data frame
+  covid_columns <- colnames(stratified_cases)
   
-  df_simplified.seq1 <- seq(1,length(df_simplified2),3)
-  df_simplified.seq2 <- seq(2,length(df_simplified2),3)
-  df_simplified.seq3 <- seq(3,length(df_simplified2),3)
+  #this binds the districts and age groups back onto the main dataframe
+  stratified_cases <- cbind(districts,age_groups,sexes, stratified_cases)
   
-  poodle1 <- df_simplified2[df_simplified.seq1]
-  poodle2 <- df_simplified2[df_simplified.seq2]
-  poodle3 <- df_simplified2[df_simplified.seq3]
+  # this fixes the variable names
+  colnames(stratified_cases)<- c(vars,covid_columns)
   
-  
-  # sensible variable names hahahahahaha
-  
-  Goatss <- colnames(stratified_cases)
-  
-  stratified_cases <- cbind(poodle1,poodle2,poodle3,stratified_cases)
-  
-  
-  
-  colnames(stratified_cases)<- c(vars,Goatss)
-  
-  
+
   stratified_cases
   
 }
@@ -913,22 +1006,55 @@ prevalator3 <- function(df=inc_by_SAD, vars=c("site_id","age_range","sex")){
 ###########################################################################################3
 ### here's the function in action:
 
-inc_by_D <- prevalator(df=inc_by_D)
-inc_by_A <- prevalator(df=inc_by_A,var1 ="age_range")
-inc_by_S <- prevalator(df=inc_by_S, var1 = "sex")
+prev_by_D <- prevalator(df=inc_by_D)
+prev_by_A <- prevalator(df=inc_by_A,var1 ="age_range")
+prev_by_S <- prevalator(df=inc_by_S, var1 = "sex")
 
-time762 <- Sys.time()
+####################################################
+###  the age-district stratification needs to be broken up
+###         bc  otherwise takes way too long
+#########################################################
 
-inc_by_AD <- prevalator2()
+# the drawback of this, is that the dates don't all start in the same place
+# this would be fixable by adding a date range term to the prevalators
 
-time766 <- Sys.time()
+prev_by_AD_list  <- list()
 
-inc_by_SA <- prevalator2(df=inc_by_SA, vars = c("sex","age_range"))
-inc_by_SD <- prevalator2(df=inc_by_SD, vars = c("site_id","sex"))
+for(i in 1:19){
+  prev_by_AD_list[[i]] <- prevalator2(df=inc_by_AD[inc_by_AD$age_range==unique(inc_by_AD$age_range)[i],])
+  
+  
+}
+
+#this does the same things but is waaay slower
+#prev_by_AD <- prevalator2(df=inc_by_AD)
+
+
+###################################################
+
+
+prev_by_SA <- prevalator2(df=inc_by_SA, vars = c("sex","age_range"))
+prev_by_SD <- prevalator2(df=inc_by_SD, vars = c("site_id","sex"))
 
 time771 <- Sys.time()
 
-#inc_by_SAD <- prevalator3()
+
+
+#############################################################################
+#############################################################################
+### this also needs to be broken up
+##      bc otherwise R breaks lol
+###############################################################################
+
+prev_by_SAD_list  <- list()
+
+for(i in 1:19){
+  prev_by_AD_list[[i]] <- prevalator3(df=inc_by_SAD[inc_by_SAD$age_range==unique(inc_by_SAD$age_range)[i],])
+  
+  
+}
+
+#prev_by_SAD <- prevalator3()
 
 
 
