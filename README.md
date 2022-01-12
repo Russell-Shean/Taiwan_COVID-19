@@ -38,7 +38,7 @@ Here's a map I made using this data: https://tulipsfortaiwan.github.io/Covid_528
 Left side: New locally acquired cases per 100,000 people from 4/23/2021    
 Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)   
    
-<img src="https://github.com/Russell-Shean/Taiwan_COVID-19/Graphs_and_GIFS/raw/main/Graphs%20and%20GIFS/quanguo_prev.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwan_COVID-19/Graphs_and_GIFS/raw/main/Graphs%20and%20GIFS/beibu_prev.gif" width="400" height=auto />
+<img src="https://github.com/Russell-Shean/Taiwan_COVID-19/raw/main/Graphs_and_GIFS/quanguo_prev.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Taiwan_COVID-19/raw/main/Graphs_and_GIFS/beibu_prev.gif" width="400" height=auto />
 
 Left side: cumulative locally acquired cases per 100,000 people from 4/23/2021    
 Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)      
@@ -48,7 +48,7 @@ Right side: Northern Taiwan (Taipei, New Taipei, Taoyuan, Keelung)
 
 Here's what the Shiny looks like:    
 
-<img src="https://github.com/Russell-Shean/Taiwan_COVID-19/Graphs_and_GIFS/blob/main/192618317_223019976297967_895173108556869321_n.png" width="400" height=auto />
+<img src="https://github.com/Russell-Shean/Taiwan_COVID-19/raw/main/Graphs_and_GIFS/192618317_223019976297967_895173108556869321_n.png" width="400" height=auto />
 
 
 
