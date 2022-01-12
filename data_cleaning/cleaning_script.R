@@ -1036,20 +1036,20 @@ for(i in 1:19){
 prev_by_SA <- prevalator2(df=inc_by_SA, vars = c("sex","age_range"))
 prev_by_SD <- prevalator2(df=inc_by_SD, vars = c("site_id","sex"))
 
-time771 <- Sys.time()
-
-
 
 #############################################################################
 #############################################################################
 ### this also needs to be broken up
 ##      bc otherwise R breaks lol
+##  
+##     Although a follow up question is why would anyone need this level of stratification...
+##
 ###############################################################################
 
 prev_by_SAD_list  <- list()
 
 for(i in 1:19){
-  prev_by_AD_list[[i]] <- prevalator3(df=inc_by_SAD[inc_by_SAD$age_range==unique(inc_by_SAD$age_range)[i],])
+  prev_by_SAD_list[[i]] <- prevalator3(df=inc_by_SAD[inc_by_SAD$age_range==unique(inc_by_SAD$age_range)[i],])
   
   
 }
