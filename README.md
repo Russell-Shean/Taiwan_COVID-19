@@ -31,6 +31,8 @@ S= sex, A =age, D = district
 
 ## If you just want to look at the pictures
 
+Here's a map I made using this data: https://tulipsfortaiwan.github.io/Covid_528_map.html
+
 <img src="https://github.com/Russell-Shean/Covid_SHINY_MAP/raw/main/Graphs%20and%20GIFS/quanguo_inc.gif" width="400" height="auto" /><img src="https://github.com/Russell-Shean/Covid_SHINY_MAP/raw/main/Graphs%20and%20GIFS/beibu_inc.gif" width="400" height=auto />
 
 Left side: New locally acquired cases per 100,000 people from 4/23/2021    
